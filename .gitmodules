@@ -1,0 +1,3 @@
+[submodule "OpenRef/Dependencies/include/glm"]
+	path = OpenRef/Dependencies/include/glm
+	url = https://github.com/g-truc/glm
