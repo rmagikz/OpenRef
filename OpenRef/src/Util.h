@@ -16,8 +16,14 @@ static bool IsOverlapSquare(const glm::dvec2& currentPos, const glm::vec2& targe
 
 static bool IsOverlapQuad(const glm::dvec2& currentPos, const Quad& quad)
 {
-	if (currentPos.x > quad.Position.x && currentPos.x < quad.Position.x + quad.Scale.x &&
+	/*if (currentPos.x > quad.Position.x && currentPos.x < quad.Position.x + quad.Scale.x &&
 		currentPos.y > quad.Position.y && currentPos.y < quad.Position.y + quad.Scale.y)
+	{
+		return true;
+	}*/
+
+	if (currentPos.x > quad.Position.x - quad.Scale.x * 0.5f && currentPos.x < quad.Position.x + quad.Scale.x * 0.5f &&
+		currentPos.y > quad.Position.y - quad.Scale.y * 0.5f && currentPos.y < quad.Position.y + quad.Scale.y * 0.5f)
 	{
 		return true;
 	}
@@ -27,10 +33,15 @@ static bool IsOverlapQuad(const glm::dvec2& currentPos, const Quad& quad)
 
 static bool IsOverlapQuadCorner(const glm::dvec2& currentPos, const Quad& quad, float borderWidth)
 {
-	bool leftSide = currentPos.x > quad.Position.x - borderWidth && currentPos.x < quad.Position.x;
+	/*bool leftSide = currentPos.x > quad.Position.x - borderWidth && currentPos.x < quad.Position.x;
 	bool rightSide = currentPos.x > quad.Position.x + quad.Scale.x && currentPos.x < quad.Position.x + quad.Scale.x + borderWidth;
 	bool topSide = currentPos.y > quad.Position.y - borderWidth && currentPos.y < quad.Position.y;
-	bool bottomSide = currentPos.y > quad.Position.y + quad.Scale.y && currentPos.y < quad.Position.y + quad.Scale.y + borderWidth;
+	bool bottomSide = currentPos.y > quad.Position.y + quad.Scale.y && currentPos.y < quad.Position.y + quad.Scale.y + borderWidth;*/
+
+	bool leftSide = currentPos.x > quad.Position.x - quad.Scale.x * 0.5f - borderWidth && currentPos.x < quad.Position.x - quad.Scale.x * 0.5f;
+	bool rightSide = currentPos.x > quad.Position.x + quad.Scale.x * 0.5f && currentPos.x < quad.Position.x + quad.Scale.x * 0.5f + borderWidth;
+	bool topSide = currentPos.y > quad.Position.y - quad.Scale.y * 0.5f - borderWidth && currentPos.y < quad.Position.y - quad.Scale.y * 0.5f;
+	bool bottomSide = currentPos.y > quad.Position.y + quad.Scale.y * 0.5f && currentPos.y < quad.Position.y + quad.Scale.y * 0.5f + borderWidth;
 
 	if ((leftSide && topSide) || (leftSide && bottomSide) ||
 		(rightSide && topSide) || (rightSide && bottomSide))

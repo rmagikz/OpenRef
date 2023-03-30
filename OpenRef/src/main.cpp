@@ -34,10 +34,9 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
             for (int i = 0; i < MaxQuads; i++)
             {
                 Quad* current = &quads[i];
-                if (IsOverlapQuadCorner(mousePos, *current, 5.0f))
+                if (IsOverlapQuadCorner(mousePos, *current, 10.0f))
                 {
                     selectedQuad = current;
-                    mouseOffset = current->Position - (glm::vec2)mousePos;
                     isScalingQuad = 1;
                     return;
                 }
@@ -142,7 +141,13 @@ int main(void)
 
             if (isScalingQuad)
             {
-                selectedQuad->Scale = (glm::vec2)mousePos - selectedQuad->Position;
+                glm::vec2 scaleDelta = (glm::vec2)mousePos - selectedQuad->Position;
+                glm::vec2 scaleOffset = selectedQuad->Scale * 0.5f;
+
+                if (mousePos.x < selectedQuad->Position.x) scaleOffset *= -1.0f;
+                   
+                selectedQuad->Scale = glm::abs(scaleDelta + scaleOffset);
+                selectedQuad->Scale = glm::clamp(selectedQuad->Scale, { 5.0f, 5.0f }, { windowWidth, windowHeight });
                 selectedQuad->Scale.y = selectedQuad->Scale.x / selectedQuad->AspectRatio;
             }
 
