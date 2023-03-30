@@ -6,20 +6,22 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "Util.h"
+
+const int MaxQuads = 1;
 
 int windowWidth = 640;
 int windowHeight = 480;
 
-int widthDelta, heightDelta;
+glm::vec2 windowSizeDelta;
+glm::vec2 mouseOffset;
+glm::dvec2 mousePos;
 
-double xPos, yPos;
-float xOffset, yOffset;
-
-Quad quads[32];
-
+Quad quads[MaxQuads];
 Quad* selectedQuad = nullptr;
 
-bool leftMousePressed = 0;
+bool isMovingQuad = 0;
+bool isScalingQuad = 0;
 bool windowResized = 0;
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -28,27 +30,33 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     {
         if (action == GLFW_PRESS)
         {
-            for (int i = 0; i < 32; i++)
+
+            for (int i = 0; i < MaxQuads; i++)
             {
                 Quad* current = &quads[i];
-                if (xPos > current->Position.x && xPos < current->Position.x + current->Scale.x &&
-                    yPos > current->Position.y && yPos < current->Position.y + current->Scale.y)
+                if (IsOverlapQuadCorner(mousePos, *current, 5.0f))
                 {
                     selectedQuad = current;
-                    xOffset = current->Position.x - xPos;
-                    yOffset = current->Position.y - yPos;
+                    mouseOffset = current->Position - (glm::vec2)mousePos;
+                    isScalingQuad = 1;
+                    return;
+                }
+
+                if (IsOverlapQuad(mousePos, *current))
+                {
+                    selectedQuad = current;
+                    mouseOffset = current->Position - (glm::vec2)mousePos;
+
+                    isMovingQuad = 1;
+                    return;
                 }
             }
-
-            if (selectedQuad == nullptr)
-                return;
-
-            leftMousePressed = 1;
         }
 
         if (action == GLFW_RELEASE)
         {
-            leftMousePressed = 0;
+            isMovingQuad = 0;
+            isScalingQuad = 0;
             selectedQuad = nullptr;
         }
     }
@@ -58,8 +66,7 @@ static void window_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
-    widthDelta = width - windowWidth;
-    heightDelta = height - windowHeight;
+    windowSizeDelta = { width - windowWidth, height - windowHeight };
 
     windowWidth = width;
     windowHeight = height;
@@ -113,7 +120,7 @@ int main(void)
         glm::mat4 proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
         shader.SetUniform4m("u_MVP", proj);
 
-        for (int i = 0; i < 32; i++)
+        for (int i = 0; i < MaxQuads; i++)
         {
             quads[i] = { {randomFloat() * (windowWidth - 50.0f), randomFloat() * (windowHeight - 50.0f)}, {50.0f, 50.0f}, (GLfloat)i };
         }
@@ -125,14 +132,18 @@ int main(void)
         {
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glfwGetCursorPos(window, &xPos, &yPos);
-            xPos = glm::clamp(xPos, 0.0, (double)windowWidth);
-            yPos = glm::clamp(yPos, 0.0, (double)windowHeight);
+            glfwGetCursorPos(window, &mousePos.x, &mousePos.y);
+            mousePos = glm::clamp(mousePos, { 0.0, 0.0 }, { windowWidth, windowHeight });
 
-            if (leftMousePressed)
+            if (isMovingQuad)
             {
-                selectedQuad->Position.x = xPos + xOffset;
-                selectedQuad->Position.y = yPos + yOffset;
+                selectedQuad->Position = (glm::vec2)mousePos + mouseOffset;
+            }
+
+            if (isScalingQuad)
+            {
+                selectedQuad->Scale = (glm::vec2)mousePos - selectedQuad->Position;
+                selectedQuad->Scale.y = selectedQuad->Scale.x / selectedQuad->AspectRatio;
             }
 
             if (windowResized)
@@ -142,18 +153,17 @@ int main(void)
                 proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
                 shader.SetUniform4m("u_MVP", proj);
 
-                for (int i = 0; i < 32; i++)
+                for (int i = 0; i < MaxQuads; i++)
                 {
                     Quad* current = &quads[i];
 
-                    current->Position.x += widthDelta / 2;
-                    current->Position.y += heightDelta / 2;
+                    current->Position += windowSizeDelta / 2.0f;
                 }
             }
 
             Renderer::Begin();
 
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < MaxQuads; i++)
             {
                 Renderer::DrawQuad(quads[i]);
             }

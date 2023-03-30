@@ -168,9 +168,11 @@
     <ClInclude Include="Dependencies\include\GL\glew.h" />
     <ClInclude Include="Dependencies\include\GL\glxew.h" />
     <ClInclude Include="Dependencies\include\GL\wglew.h" />
+    <ClInclude Include="src\Callbacks.h" />
     <ClInclude Include="src\GLCall.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Util.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\standard.frag" />

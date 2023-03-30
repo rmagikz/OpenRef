@@ -8,9 +8,18 @@
 
 struct Quad
 {
+	Quad() {}
+	Quad(glm::vec2 position, glm::vec2 scale, GLfloat texIndex)
+	{
+		this->Position = position;
+		this->Scale = scale;
+		this->TexIndex = texIndex;
+		this->AspectRatio = scale.x / scale.y;
+	}
 	glm::vec2 Position;
 	glm::vec2 Scale;
 	GLfloat TexIndex;
+	float AspectRatio;
 };
 
 class Renderer
@@ -24,5 +33,4 @@ public:
 	static void Flush();
 
 	static void DrawQuad(const Quad& quad);
-
 };
