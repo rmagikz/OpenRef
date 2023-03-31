@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Shader.h"
+#include "Texture.h"
 #include "Renderer.h"
 
 #include "glm/glm.hpp"
@@ -17,12 +18,15 @@ glm::vec2 windowSizeDelta;
 glm::vec2 mouseOffset;
 glm::dvec2 mousePos;
 
+Texture** textures = new Texture*[MaxQuads];
 Quad quads[MaxQuads];
 Quad* selectedQuad = nullptr;
 
 bool isMovingQuad = 0;
 bool isScalingQuad = 0;
 bool windowResized = 0;
+
+GLint textureCount = 0;
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -73,6 +77,18 @@ static void window_size_callback(GLFWwindow* window, int width, int height)
     windowResized = 1;
 }
 
+static void drop_callback(GLFWwindow* window, int path_count, const char* paths[])
+{
+    std::cout << paths[0] << std::endl;
+
+    textures[textureCount] = new Texture(paths[0]);
+    textures[textureCount]->Bind(textureCount);
+
+    quads[textureCount] = { {windowWidth / 2, windowHeight / 2 }, { textures[textureCount]->Width(), textures[textureCount]->Height() }, (GLfloat)textureCount};
+
+    textureCount++;
+}
+
 float randomFloat()
 {
     return float(rand()) / float((RAND_MAX));
@@ -80,6 +96,7 @@ float randomFloat()
 
 int main(void)
 {
+
     GLFWwindow* window;
 
     if (!glfwInit())
@@ -88,6 +105,9 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     window = glfwCreateWindow(windowWidth, windowHeight, "OpenRef", NULL, NULL);
     if (!window)
@@ -103,8 +123,8 @@ int main(void)
     glClearColor(0.24f, 0.25f, 0.29f, 1.0f);
 
     glfwSetMouseButtonCallback(window, mouse_button_callback);
-
     glfwSetWindowSizeCallback(window, window_size_callback);
+    glfwSetDropCallback(window, drop_callback);
 
     if (glewInit() != GLEW_OK)
     {
@@ -119,11 +139,12 @@ int main(void)
         glm::mat4 proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
         shader.SetUniform4m("u_MVP", proj);
 
-        for (int i = 0; i < MaxQuads; i++)
+        GLint textures[32];
+        for (GLint i = 0; i < 32; i++)
         {
-            quads[i] = { {randomFloat() * (windowWidth - 50.0f), randomFloat() * (windowHeight - 50.0f)}, {50.0f, 50.0f}, (GLfloat)i };
+            textures[i] = i;
         }
-
+        shader.SetUniform1iv("u_Textures", 32, textures);
 
         Renderer::Init();
 
@@ -147,7 +168,7 @@ int main(void)
                 if (mousePos.x < selectedQuad->Position.x) scaleOffset *= -1.0f;
                    
                 selectedQuad->Scale = glm::abs(scaleDelta + scaleOffset);
-                selectedQuad->Scale = glm::clamp(selectedQuad->Scale, { 5.0f, 5.0f }, { windowWidth, windowHeight });
+                selectedQuad->Scale = glm::clamp(selectedQuad->Scale, {25.0f, 25.0f}, {windowWidth, windowHeight});
                 selectedQuad->Scale.y = selectedQuad->Scale.x / selectedQuad->AspectRatio;
             }
 
@@ -168,7 +189,7 @@ int main(void)
 
             Renderer::Begin();
 
-            for (int i = 0; i < MaxQuads; i++)
+            for (int i = 0; i < textureCount; i++)
             {
                 Renderer::DrawQuad(quads[i]);
             }
@@ -182,6 +203,13 @@ int main(void)
 
         Renderer::Shutdown();
     }
+
+    for (int i = 0; i < textureCount; i++)
+    {
+        delete textures[i];
+    }
+
+    delete[] textures;
 
     glfwTerminate();
     return 0;

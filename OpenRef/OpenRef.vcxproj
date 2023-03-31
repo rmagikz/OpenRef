@@ -71,25 +71,25 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Dependencies\include\stb;$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Dependencies\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Dependencies\include\stb;$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Dependencies\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)</OutDir>
-    <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Dependencies\include\stb;$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Dependencies\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Dependencies\include\stb;$(ProjectDir)Dependencies\include\glm;$(ProjectDir)Dependencies\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)Dependencies\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)</OutDir>
     <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)</IntDir>
@@ -159,6 +159,8 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\stb_image.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Dependencies\include\GLFW\glfw3.h" />
@@ -173,6 +175,7 @@
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Util.h" />
+    <ClInclude Include="src\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\standard.frag" />

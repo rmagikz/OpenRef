@@ -38,34 +38,45 @@ void Shader::Unbind()
 	GLCall(glUseProgram(0));
 }
 
+void Shader::SetUniform1i(const char* name, int v0)
+{
+	GLCall(glUniform1i(GetUniformLocation(name), v0));
+}
+
 void Shader::SetUniform1f(const char* name, float v0)
 {
-	glUniform1f(GetUniformLocation(name), v0);
+	GLCall(glUniform1f(GetUniformLocation(name), v0));
 }
 
 void Shader::SetUniform2f(const char* name, float v0, float v1)
 {
-	glUniform2f(GetUniformLocation(name), v0, v1);
+	GLCall(glUniform2f(GetUniformLocation(name), v0, v1));
 }
 
 void Shader::SetUniform3f(const char* name, float v0, float v1, float v2)
 {
-	glUniform3f(GetUniformLocation(name), v0, v1, v2);
+	GLCall(glUniform3f(GetUniformLocation(name), v0, v1, v2));
 }
 
 void Shader::SetUniform4f(const char* name, float v0, float v1, float v2, float v3)
 {
-	glUniform4f(GetUniformLocation(name), v0, v1, v2 ,v3);
+	GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2 ,v3));
 }
 
 void Shader::SetUniform4m(const char* name, const glm::mat4& matrix)
 {
-	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
+	GLCall(glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
+}
+
+void Shader::SetUniform1iv(const char* name, GLsizei count, const GLint* data)
+{
+	GLCall(glUniform1iv(GetUniformLocation(name), count, data));
 }
 
 GLint Shader::GetUniformLocation(const char* name)
 {
-	if (GLint uniform = glGetUniformLocation(m_ID, name) == -1)
+	GLint uniform = glGetUniformLocation(m_ID, name);
+	if (uniform == -1)
 	{
 		std::cout << "Uniform " << name << " was not found." << std::endl;
 	}
