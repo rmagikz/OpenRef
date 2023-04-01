@@ -9,7 +9,7 @@
 
 #include "Util.h"
 
-const int MaxQuads = 1;
+const int MaxQuads = 2;
 
 int windowWidth = 640;
 int windowHeight = 480;
@@ -18,7 +18,6 @@ glm::vec2 windowSizeDelta;
 glm::vec2 mouseOffset;
 glm::dvec2 mousePos;
 
-Texture** textures = new Texture*[MaxQuads];
 Quad quads[MaxQuads];
 Quad* selectedQuad = nullptr;
 
@@ -26,7 +25,7 @@ bool isMovingQuad = 0;
 bool isScalingQuad = 0;
 bool windowResized = 0;
 
-GLint textureCount = 0;
+GLint quadCount = 0;
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -35,7 +34,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
         if (action == GLFW_PRESS)
         {
 
-            for (int i = 0; i < MaxQuads; i++)
+            for (int i = 0; i < quadCount; i++)
             {
                 Quad* current = &quads[i];
                 if (IsOverlapQuadCorner(mousePos, *current, 10.0f))
@@ -79,14 +78,15 @@ static void window_size_callback(GLFWwindow* window, int width, int height)
 
 static void drop_callback(GLFWwindow* window, int path_count, const char* paths[])
 {
-    std::cout << paths[0] << std::endl;
+    if (quadCount >= MaxQuads)
+    {
+        std::cout << "Max number of reference images reached!" << std::endl;
+        return;
+    }
 
-    textures[textureCount] = new Texture(paths[0]);
-    textures[textureCount]->Bind(textureCount);
+    quads[quadCount] = { {windowWidth / 2, windowHeight / 2 }, (GLfloat)quadCount, paths[0]};
 
-    quads[textureCount] = { {windowWidth / 2, windowHeight / 2 }, { textures[textureCount]->Width(), textures[textureCount]->Height() }, (GLfloat)textureCount};
-
-    textureCount++;
+    quadCount++;
 }
 
 float randomFloat()
@@ -102,8 +102,8 @@ int main(void)
     if (!glfwInit())
         return -1;
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     glEnable(GL_BLEND);
@@ -139,12 +139,12 @@ int main(void)
         glm::mat4 proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
         shader.SetUniform4m("u_MVP", proj);
 
-        GLint textures[32];
+        GLint samplers[32];
         for (GLint i = 0; i < 32; i++)
         {
-            textures[i] = i;
+            samplers[i] = i;
         }
-        shader.SetUniform1iv("u_Textures", 32, textures);
+        shader.SetUniform1iv("u_Textures", 32, samplers);
 
         Renderer::Init();
 
@@ -179,7 +179,7 @@ int main(void)
                 proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
                 shader.SetUniform4m("u_MVP", proj);
 
-                for (int i = 0; i < MaxQuads; i++)
+                for (int i = 0; i < quadCount; i++)
                 {
                     Quad* current = &quads[i];
 
@@ -189,8 +189,9 @@ int main(void)
 
             Renderer::Begin();
 
-            for (int i = 0; i < textureCount; i++)
+            for (int i = 0; i < quadCount; i++)
             {
+                quads[i].Tex->Bind(quads[i].TexIndex);
                 Renderer::DrawQuad(quads[i]);
             }
             
@@ -204,12 +205,12 @@ int main(void)
         Renderer::Shutdown();
     }
 
-    for (int i = 0; i < textureCount; i++)
-    {
-        delete textures[i];
-    }
+    //for (int i = 0; i < textureCount; i++)
+    //{
+    //    delete textures[i];
+    //}
 
-    delete[] textures;
+    //delete[] textures;
 
     glfwTerminate();
     return 0;

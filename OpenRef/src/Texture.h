@@ -3,15 +3,19 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 
+#include <string>
+
 class Texture
 {
 private:
 	GLuint m_ID;
 	int m_Width, m_Height, m_BPP;
 	unsigned char* m_Buffer;
+	std::string m_Path;
 public:
 	Texture();
 	Texture(const char* texturePath);
+	Texture(const Texture& other);
 	~Texture();
 
 	void Bind(GLuint slot = 0);

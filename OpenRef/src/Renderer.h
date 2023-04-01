@@ -8,20 +8,25 @@
 #include "GLCall.h"
 #include <iostream>
 
-struct Quad
+class Quad
 {
+public:
 	Quad() {}
-	Quad(glm::vec2 position, glm::vec2 scale, GLfloat texIndex)
+	Quad(glm::vec2 position, GLfloat texIndex, const char* path)
 	{
 		this->Position = position;
 		this->TexIndex = texIndex;
-		this->Scale = scale;
-		this->AspectRatio = scale.x / scale.y;
+		this->Tex = new Texture(path);
+		this->Tex->Bind((GLuint)this->TexIndex);
+
+		this->Scale = { this->Tex->Width(), this->Tex->Height()};
+		this->AspectRatio = Scale.x / Scale.y;
 	}
 	glm::vec2 Position = glm::vec2(0);
 	glm::vec2 Scale = glm::vec2(0);
 	GLfloat TexIndex = 0.0f;
 	float AspectRatio = 0.0f;
+	Texture* Tex;
 };
 
 class Renderer
