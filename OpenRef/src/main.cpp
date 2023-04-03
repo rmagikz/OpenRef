@@ -18,12 +18,16 @@ glm::vec2 windowSizeDelta;
 glm::vec2 mouseOffset;
 glm::dvec2 mousePos;
 
+glm::vec2 viewOffset(0.0f);
+
 Quad quads[MaxQuads];
 Quad* selectedQuad = nullptr;
 
 bool isMovingQuad = 0;
 bool isScalingQuad = 0;
 bool windowResized = 0;
+bool isPanning = 0;
+bool isZooming = 0;
 
 GLint quadCount = 0;
 
@@ -37,7 +41,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
             for (int i = 0; i < quadCount; i++)
             {
                 Quad* current = &quads[i];
-                if (IsOverlapQuadCorner(mousePos, *current, 10.0f))
+                if (IsOverlapQuadCorner(mousePos, *current, viewOffset, 10.0f))
                 {
                     selectedQuad = current;
                     isScalingQuad = 1;
@@ -47,20 +51,29 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
                 if (IsOverlapQuad(mousePos, *current))
                 {
                     selectedQuad = current;
-                    mouseOffset = current->Position - (glm::vec2)mousePos;
+                    mouseOffset = current->FinalPosition() - (glm::vec2)mousePos;
 
                     isMovingQuad = 1;
                     return;
                 }
             }
+            isPanning = 1;
+            mouseOffset = (glm::vec2)mousePos - quads[0].ViewOffset();
+            std::cout << "MOVING VIEW" << std::endl;
         }
+    }
 
-        if (action == GLFW_RELEASE)
-        {
-            isMovingQuad = 0;
-            isScalingQuad = 0;
-            selectedQuad = nullptr;
-        }
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        
+    }
+
+    if (action == GLFW_RELEASE)
+    {
+        isMovingQuad = 0;
+        isScalingQuad = 0;
+        isPanning = 0;
+        selectedQuad = nullptr;
     }
 }
 
@@ -157,19 +170,29 @@ int main(void)
 
             if (isMovingQuad)
             {
-                selectedQuad->Position = (glm::vec2)mousePos + mouseOffset;
+                selectedQuad->Position() = (glm::vec2)mousePos - selectedQuad->ViewOffset() + mouseOffset;
             }
 
             if (isScalingQuad)
             {
-                glm::vec2 scaleDelta = (glm::vec2)mousePos - selectedQuad->Position;
-                glm::vec2 scaleOffset = selectedQuad->Scale * 0.5f;
+                glm::vec2 scaleDelta = (glm::vec2)mousePos - selectedQuad->FinalPosition();
+                glm::vec2 scaleOffset = selectedQuad->FinalScale() * 0.5f;
 
-                if (mousePos.x < selectedQuad->Position.x) scaleOffset *= -1.0f;
+                if (mousePos.x < selectedQuad->FinalPosition().x) scaleOffset *= -1.0f;
                    
-                selectedQuad->Scale = glm::abs(scaleDelta + scaleOffset);
-                selectedQuad->Scale = glm::clamp(selectedQuad->Scale, {25.0f, 25.0f}, {windowWidth, windowHeight});
-                selectedQuad->Scale.y = selectedQuad->Scale.x / selectedQuad->AspectRatio;
+                selectedQuad->Scale() = glm::abs(scaleDelta + scaleOffset);
+                selectedQuad->Scale() = glm::clamp(selectedQuad->Scale(), {25.0f, 25.0f}, {windowWidth, windowHeight});
+                selectedQuad->Scale().y = selectedQuad->Scale().x / selectedQuad->AspectRatio();
+            }
+
+            if (isPanning)
+            {
+                viewOffset = (glm::vec2)mousePos - mouseOffset;
+
+                for (int i = 0; i < quadCount; i++)
+                {
+                    quads[i].ViewOffset() = viewOffset;
+                }
             }
 
             if (windowResized)
@@ -183,15 +206,15 @@ int main(void)
                 {
                     Quad* current = &quads[i];
 
-                    current->Position += windowSizeDelta / 2.0f;
+                    current->Position() += windowSizeDelta / 2.0f;
                 }
             }
 
             Renderer::Begin();
 
-            for (int i = 0; i < quadCount; i++)
+            for (int i = 0; i < quadCount ; i++)
             {
-                quads[i].Tex->Bind(quads[i].TexIndex);
+                quads[i].GetTexture()->Bind(quads[i].TextureIndex());
                 Renderer::DrawQuad(quads[i]);
             }
             
@@ -204,13 +227,6 @@ int main(void)
 
         Renderer::Shutdown();
     }
-
-    //for (int i = 0; i < textureCount; i++)
-    //{
-    //    delete textures[i];
-    //}
-
-    //delete[] textures;
 
     glfwTerminate();
     return 0;

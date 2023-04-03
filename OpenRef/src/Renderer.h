@@ -10,23 +10,34 @@
 
 class Quad
 {
+private:
+	glm::vec2 m_Position;
+	glm::vec2 m_Scale;
+	glm::vec2 m_ViewOffset;
+	glm::vec2 m_ViewScaleOffset;
+	GLfloat m_TexIndex;
+	float m_AspectRatio;
+	Texture* m_Texture;
 public:
 	Quad() {}
 	Quad(glm::vec2 position, GLfloat texIndex, const char* path)
+		: m_Position(position), m_Scale(0), m_ViewOffset(0), m_ViewScaleOffset(0), m_TexIndex(texIndex), m_AspectRatio(0), m_Texture()
 	{
-		this->Position = position;
-		this->TexIndex = texIndex;
-		this->Tex = new Texture(path);
-		this->Tex->Bind((GLuint)this->TexIndex);
+		m_Texture = new Texture(path);
+		m_Texture->Bind((GLuint)m_TexIndex);
 
-		this->Scale = { this->Tex->Width(), this->Tex->Height()};
-		this->AspectRatio = Scale.x / Scale.y;
+		m_Scale = { m_Texture->Width(), m_Texture->Height()};
+		m_AspectRatio = m_Scale.x / m_Scale.y;
 	}
-	glm::vec2 Position = glm::vec2(0);
-	glm::vec2 Scale = glm::vec2(0);
-	GLfloat TexIndex = 0.0f;
-	float AspectRatio = 0.0f;
-	Texture* Tex;
+
+	inline glm::vec2 FinalPosition() const { return m_Position + m_ViewOffset; }
+	inline glm::vec2 FinalScale() const { return m_Scale + m_ViewScaleOffset; }
+	inline Texture* GetTexture() const { return m_Texture; }
+	inline GLfloat TextureIndex() const { return m_TexIndex; }
+	inline float AspectRatio() const { return m_AspectRatio; }
+	inline glm::vec2& Position() { return m_Position; }
+	inline glm::vec2& Scale() { return m_Scale; }
+	inline glm::vec2& ViewOffset() { return m_ViewOffset; }
 };
 
 class Renderer

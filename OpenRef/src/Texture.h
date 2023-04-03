@@ -15,7 +15,6 @@ private:
 public:
 	Texture();
 	Texture(const char* texturePath);
-	Texture(const Texture& other);
 	~Texture();
 
 	void Bind(GLuint slot = 0);

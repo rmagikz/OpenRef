@@ -111,24 +111,24 @@ void Renderer::DrawQuad(const Quad& quad)
 		Begin();
 	}
 
-	rData.QuadBufferPtr->position = { quad.Position.x - quad.Scale.x * 0.5f, quad.Position.y + quad.Scale.y * 0.5f };
+	rData.QuadBufferPtr->position = { quad.FinalPosition().x - quad.FinalScale().x * 0.5f, quad.FinalPosition().y + quad.FinalScale().y * 0.5f};
 	rData.QuadBufferPtr->texCoord = { 0.0f, 0.0f };
-	rData.QuadBufferPtr->texIndex = quad.TexIndex;
+	rData.QuadBufferPtr->texIndex = quad.TextureIndex();
 	rData.QuadBufferPtr++;
 
-	rData.QuadBufferPtr->position = { quad.Position.x + quad.Scale.x * 0.5f, quad.Position.y + quad.Scale.y * 0.5f };
+	rData.QuadBufferPtr->position = { quad.FinalPosition().x + quad.FinalScale().x * 0.5f, quad.FinalPosition().y + quad.FinalScale().y * 0.5f};
 	rData.QuadBufferPtr->texCoord = { 1.0f, 0.0f };
-	rData.QuadBufferPtr->texIndex = quad.TexIndex;
+	rData.QuadBufferPtr->texIndex = quad.TextureIndex();
 	rData.QuadBufferPtr++;
 
-	rData.QuadBufferPtr->position = { quad.Position.x + quad.Scale.x * 0.5f, quad.Position.y - quad.Scale.y * 0.5f };
+	rData.QuadBufferPtr->position = { quad.FinalPosition().x + quad.FinalScale().x * 0.5f, quad.FinalPosition().y - quad.FinalScale().y * 0.5f};
 	rData.QuadBufferPtr->texCoord = { 1.0f, 1.0f };
-	rData.QuadBufferPtr->texIndex = quad.TexIndex;
+	rData.QuadBufferPtr->texIndex = quad.TextureIndex();
 	rData.QuadBufferPtr++;
 
-	rData.QuadBufferPtr->position = { quad.Position.x - quad.Scale.x * 0.5f, quad.Position.y - quad.Scale.y * 0.5f };
+	rData.QuadBufferPtr->position = { quad.FinalPosition().x - quad.FinalScale().x * 0.5f, quad.FinalPosition().y - quad.FinalScale().y * 0.5f};
 	rData.QuadBufferPtr->texCoord = { 0.0f, 1.0f };
-	rData.QuadBufferPtr->texIndex = quad.TexIndex;
+	rData.QuadBufferPtr->texIndex = quad.TextureIndex();
 	rData.QuadBufferPtr++;
 
 	rData.IndexCount += 6;

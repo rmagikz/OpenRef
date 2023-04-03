@@ -22,8 +22,8 @@ static bool IsOverlapQuad(const glm::dvec2& currentPos, const Quad& quad)
 		return true;
 	}*/
 
-	if (currentPos.x > quad.Position.x - quad.Scale.x * 0.5f && currentPos.x < quad.Position.x + quad.Scale.x * 0.5f &&
-		currentPos.y > quad.Position.y - quad.Scale.y * 0.5f && currentPos.y < quad.Position.y + quad.Scale.y * 0.5f)
+	if (currentPos.x > quad.FinalPosition().x - quad.FinalScale().x * 0.5f && currentPos.x < quad.FinalPosition().x + quad.FinalScale().x * 0.5f &&
+		currentPos.y > quad.FinalPosition().y - quad.FinalScale().y * 0.5f && currentPos.y < quad.FinalPosition().y + quad.FinalScale().y * 0.5f)
 	{
 		return true;
 	}
@@ -31,17 +31,17 @@ static bool IsOverlapQuad(const glm::dvec2& currentPos, const Quad& quad)
 	return false;
 }
 
-static bool IsOverlapQuadCorner(const glm::dvec2& currentPos, const Quad& quad, float borderWidth)
+static bool IsOverlapQuadCorner(const glm::dvec2& currentPos, const Quad& quad, const glm::vec2& viewOffset, float borderWidth)
 {
 	/*bool leftSide = currentPos.x > quad.Position.x - borderWidth && currentPos.x < quad.Position.x;
 	bool rightSide = currentPos.x > quad.Position.x + quad.Scale.x && currentPos.x < quad.Position.x + quad.Scale.x + borderWidth;
 	bool topSide = currentPos.y > quad.Position.y - borderWidth && currentPos.y < quad.Position.y;
 	bool bottomSide = currentPos.y > quad.Position.y + quad.Scale.y && currentPos.y < quad.Position.y + quad.Scale.y + borderWidth;*/
 
-	bool leftSide = currentPos.x > quad.Position.x - quad.Scale.x * 0.5f - borderWidth && currentPos.x < quad.Position.x - quad.Scale.x * 0.5f;
-	bool rightSide = currentPos.x > quad.Position.x + quad.Scale.x * 0.5f && currentPos.x < quad.Position.x + quad.Scale.x * 0.5f + borderWidth;
-	bool topSide = currentPos.y > quad.Position.y - quad.Scale.y * 0.5f - borderWidth && currentPos.y < quad.Position.y - quad.Scale.y * 0.5f;
-	bool bottomSide = currentPos.y > quad.Position.y + quad.Scale.y * 0.5f && currentPos.y < quad.Position.y + quad.Scale.y * 0.5f + borderWidth;
+	bool leftSide = currentPos.x > quad.FinalPosition().x - quad.FinalScale().x * 0.5f - borderWidth && currentPos.x < quad.FinalPosition().x - quad.FinalScale().x * 0.5f;
+	bool rightSide = currentPos.x > quad.FinalPosition().x + quad.FinalScale().x * 0.5f && currentPos.x < quad.FinalPosition().x + quad.FinalScale().x * 0.5f + borderWidth;
+	bool topSide = currentPos.y > quad.FinalPosition().y - quad.FinalScale().y * 0.5f - borderWidth && currentPos.y < quad.FinalPosition().y - quad.FinalScale().y * 0.5f;
+	bool bottomSide = currentPos.y > quad.FinalPosition().y + quad.FinalScale().y * 0.5f && currentPos.y < quad.FinalPosition().y + quad.FinalScale().y * 0.5f + borderWidth;
 
 	if ((leftSide && topSide) || (leftSide && bottomSide) ||
 		(rightSide && topSide) || (rightSide && bottomSide))
