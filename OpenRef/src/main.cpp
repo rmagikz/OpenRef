@@ -7,27 +7,23 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
-#include "Util.h"
+const int MaxQuads = 32;
+const float ZoomSensitivity = 10.0f;
 
-const int MaxQuads = 2;
+int windowWidth = 1280;
+int windowHeight = 720;
 
-int windowWidth = 640;
-int windowHeight = 480;
-
-glm::vec2 windowSizeDelta;
 glm::vec2 mouseOffset;
 glm::dvec2 mousePos;
 
-glm::vec2 viewOffset(0.0f);
+glm::mat4 proj(1.0f);
 
 Quad quads[MaxQuads];
 Quad* selectedQuad = nullptr;
 
 bool isMovingQuad = 0;
 bool isScalingQuad = 0;
-bool windowResized = 0;
 bool isPanning = 0;
-bool isZooming = 0;
 
 GLint quadCount = 0;
 
@@ -37,35 +33,29 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     {
         if (action == GLFW_PRESS)
         {
-
             for (int i = 0; i < quadCount; i++)
             {
                 Quad* current = &quads[i];
-                if (IsOverlapQuadCorner(mousePos, *current, viewOffset, 10.0f))
+                if (Quad::IsOverlapBorder(mousePos, *current, 10.0f))
                 {
                     selectedQuad = current;
                     isScalingQuad = 1;
                     return;
                 }
 
-                if (IsOverlapQuad(mousePos, *current))
+                if (Quad::IsOverlap(mousePos, *current))
                 {
+                    std::cout << "MOVING QUAD" << std::endl;
                     selectedQuad = current;
-                    mouseOffset = current->FinalPosition() - (glm::vec2)mousePos;
+                    mouseOffset = current->Position() - (glm::vec2)mousePos;
 
                     isMovingQuad = 1;
                     return;
                 }
             }
             isPanning = 1;
-            mouseOffset = (glm::vec2)mousePos - quads[0].ViewOffset();
-            std::cout << "MOVING VIEW" << std::endl;
+            mouseOffset = (glm::vec2)mousePos - Quad::PositionOffset();
         }
-    }
-
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    {
-        
     }
 
     if (action == GLFW_RELEASE)
@@ -77,16 +67,32 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     }
 }
 
+static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    float windowAspectRatio = (float)windowWidth / (float)windowHeight;
+
+    float scaleDelta = yoffset * ZoomSensitivity;
+    Quad::SetScaleOffset(Quad::ScaleOffset() + scaleDelta);
+    Quad::ClampScaleOffset({ -100.0f, -100.0f }, { windowWidth, windowHeight });
+}
+
 static void window_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 
-    windowSizeDelta = { width - windowWidth, height - windowHeight };
+    glm::vec2 windowSizeDelta = { width - windowWidth, height - windowHeight };
 
     windowWidth = width;
     windowHeight = height;
 
-    windowResized = 1;
+    proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
+
+    for (int i = 0; i < quadCount; i++)
+    {
+        Quad* current = &quads[i];
+
+        current->SetPosition(current->Position() + windowSizeDelta / 2.0f);
+    }
 }
 
 static void drop_callback(GLFWwindow* window, int path_count, const char* paths[])
@@ -136,6 +142,7 @@ int main(void)
     glClearColor(0.24f, 0.25f, 0.29f, 1.0f);
 
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetScrollCallback(window, scroll_callback);
     glfwSetWindowSizeCallback(window, window_size_callback);
     glfwSetDropCallback(window, drop_callback);
 
@@ -149,10 +156,10 @@ int main(void)
         Shader shader("res/shaders/standard.vert", "res/shaders/standard.frag");
         shader.Bind();
 
-        glm::mat4 proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
+        proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
         shader.SetUniform4m("u_MVP", proj);
 
-        GLint samplers[32];
+        GLint samplers[32]{};
         for (GLint i = 0; i < 32; i++)
         {
             samplers[i] = i;
@@ -170,47 +177,29 @@ int main(void)
 
             if (isMovingQuad)
             {
-                selectedQuad->Position() = (glm::vec2)mousePos - selectedQuad->ViewOffset() + mouseOffset;
+                selectedQuad->SetPosition((glm::vec2)mousePos + mouseOffset);
+            }
+
+            if (isPanning)
+            {
+                Quad::SetPositionOffset((glm::vec2)mousePos - mouseOffset);
             }
 
             if (isScalingQuad)
             {
                 glm::vec2 scaleDelta = (glm::vec2)mousePos - selectedQuad->FinalPosition();
-                glm::vec2 scaleOffset = selectedQuad->FinalScale() * 0.5f;
+                glm::vec2 scaleOffset = (selectedQuad->Scale() - Quad::ScaleOffset()) * 0.5f;
 
                 if (mousePos.x < selectedQuad->FinalPosition().x) scaleOffset *= -1.0f;
                    
-                selectedQuad->Scale() = glm::abs(scaleDelta + scaleOffset);
-                selectedQuad->Scale() = glm::clamp(selectedQuad->Scale(), {25.0f, 25.0f}, {windowWidth, windowHeight});
-                selectedQuad->Scale().y = selectedQuad->Scale().x / selectedQuad->AspectRatio();
+                selectedQuad->SetScale(glm::abs(scaleDelta + scaleOffset));
+                selectedQuad->ClampScale({ 150.0f, 150.0f }, { windowWidth, windowHeight });
+                selectedQuad->CalculateAspectRatio();
             }
 
-            if (isPanning)
-            {
-                viewOffset = (glm::vec2)mousePos - mouseOffset;
-
-                for (int i = 0; i < quadCount; i++)
-                {
-                    quads[i].ViewOffset() = viewOffset;
-                }
-            }
-
-            if (windowResized)
-            {
-                windowResized = 0;
-
-                proj = glm::ortho(0.0f, (float)windowWidth, (float)windowHeight, 0.0f, -1.0f, 1.0f);
-                shader.SetUniform4m("u_MVP", proj);
-
-                for (int i = 0; i < quadCount; i++)
-                {
-                    Quad* current = &quads[i];
-
-                    current->Position() += windowSizeDelta / 2.0f;
-                }
-            }
 
             Renderer::Begin();
+            shader.SetUniform4m("u_MVP", proj);
 
             for (int i = 0; i < quadCount ; i++)
             {

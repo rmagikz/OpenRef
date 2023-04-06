@@ -33,6 +33,9 @@
     <ClCompile Include="src\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Quad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GLCall.h">
@@ -65,13 +68,13 @@
     <ClInclude Include="Dependencies\include\glm\glm.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Callbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Quad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

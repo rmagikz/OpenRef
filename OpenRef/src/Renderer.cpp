@@ -2,6 +2,8 @@
 
 #include "GLCall.h"
 
+#include "glm/glm.hpp"
+
 #include <iostream>
 
 static const size_t MaxQuadCount = 32;
